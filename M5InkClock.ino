@@ -17,8 +17,6 @@ void setup(void)
     M5.begin();
     env_begin();
 
-    Serial.println(esp_reset_reason());
-    Serial.println(esp_sleep_get_wakeup_cause());
     M5.Display.setEpdMode(epd_fast);
 
     if (esp_reset_reason() != ESP_RST_DEEPSLEEP)
