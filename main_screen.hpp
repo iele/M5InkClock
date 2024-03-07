@@ -45,8 +45,18 @@ void mainScreen()
     // Date ----------------------------------------------------------
     M5.Display.startWrite();
     char date_str[30];
-    sprintf(date_str, "%s%s %s", months[timeinfo.tm_mon], days[timeinfo.tm_mday], week[timeinfo.tm_wday]);
-    displayText(date_str, &efontCN_24, M5.Display.width() / 2, 25, ALIGN_CENTER, 1);
+    char week_str[30];
+    sprintf(date_str, "%s%s ", months[timeinfo.tm_mon], days[timeinfo.tm_mday]);
+    sprintf(week_str, "%s", week[timeinfo.tm_wday]);
+    M5.Display.setFont(&efontCN_24);
+    auto width1 = M5.Display.textWidth(date_str);
+    auto width2 = M5.Display.textWidth(week_str);
+    auto width = width1+width2;
+    displayText(date_str, &efontCN_24, (M5.Display.width()  - width) / 2, 25, ALIGN_LEFT, 1);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    M5.Display.fillRect( (M5.Display.width()  + width) / 2 - width2 - 3 , 25 - 3, 30, 30, TFT_BLACK);
+    displayText(week_str, &efontCN_24, (M5.Display.width()  + width) / 2, 25, ALIGN_RIGHT, 1);
+    M5.Display.setTextColor(TFT_BLACK, TFT_WHITE);
     M5.Display.endWrite();
 
     bool temp_avaliable = sht3x.update();
@@ -102,12 +112,4 @@ void mainScreen()
     M5.Display.endWrite();
     M5.Display.display();
     M5.Display.waitDisplay();
-<<<<<<< HEAD
 }
-=======
-    
-    M5.Display.powerSaveOn();
-    M5.Power.lightSleep(60 * 1000 * 1000);
-    M5.Display.powerSaveOff();
-}
->>>>>>> 569eb17 (wifi)
