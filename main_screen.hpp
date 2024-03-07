@@ -102,4 +102,12 @@ void mainScreen()
     M5.Display.endWrite();
     M5.Display.display();
     M5.Display.waitDisplay();
+<<<<<<< HEAD
 }
+=======
+    
+    M5.Display.powerSaveOn();
+    M5.Power.lightSleep(60 * 1000 * 1000);
+    M5.Display.powerSaveOff();
+}
+>>>>>>> 569eb17 (wifi)

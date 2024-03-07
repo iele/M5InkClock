@@ -40,14 +40,20 @@ void drawAxes()
 void drawPoint(int channel, int rssi, const char *name, bool tag)
 {
     int x = map(channel, 1, 13, 30, M5.Display.width() - 20);
-    int y = map(abs(rssi), 20, 100, M5.Display.height() - 30, 30);
+    int y = map(abs(rssi), 0, 100, M5.Display.height() - 30, 10);
     M5.Display.fillCircle(x, y, 2, TFT_BLACK);
     if (tag) {
         M5.Display.drawCircle(x, y, 5, TFT_BLACK);
-        M5.Display.drawString(name, x + 3, y, &Font0);
         char detail[20];
-        sprintf(detail, "ch %d r%d", channel, rssi);
-        M5.Display.drawString(detail, x + 3, y+10, &Font0);
+        sprintf(detail, "CH%d R%d", channel, rssi);
+        if (x + 7 + M5.Display.textWidth(name, &Font0) > 200 || x + 7 + M5.Display.textWidth(detail, &Font0) > 200) {
+            auto align = max(M5.Display.textWidth(name, &Font0), M5.Display.textWidth(detail, &Font0));
+            M5.Display.drawString(name, x + 7 - align , y+7, &Font0);
+            M5.Display.drawString(detail, x + 7 - align, y+17, &Font0);
+        } else {
+            M5.Display.drawString(name, x + 7, y+7, &Font0);
+            M5.Display.drawString(detail, x + 7, y+17, &Font0);
+        }
     }
 }
 
