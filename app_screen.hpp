@@ -6,7 +6,7 @@
 #include "wifi_scan.hpp"
 
 #define APPS 5
-const char *apps[] = {"24点计算器", "WiFi扫描器", "待定", "待定", "返回"};
+const char *apps[] = {"24点计算器", "WiFi扫描器", "待定", "设置", "返回"};
 int selected_apps = 0;
 
 void appScreen()
@@ -16,8 +16,6 @@ void appScreen()
 
     while (true)
     {
-        M5.update();
-
         if (M5.BtnA.wasClicked())
         {
             if (selected_apps <= 0)
@@ -57,7 +55,7 @@ void appScreen()
                 break;
             }
         }
-        else if (M5.BtnPWR.wasHold())
+        else if (M5.BtnPWR.wasHold() || M5.BtnB.wasHold())
         {
             return;
         }
@@ -89,5 +87,7 @@ void appScreen()
         M5.Display.endWrite();
         M5.Display.display();
         M5.Display.waitDisplay();
+
+        M5.update();
     }
 }

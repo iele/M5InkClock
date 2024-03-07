@@ -20,16 +20,13 @@ const char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
 
 void mainScreen()
 {
+    M5.Display.fillScreen(TFT_BLACK);
+    M5.Display.fillScreen(TFT_WHITE);
+
     auto timeinfo = M5.Rtc.getDateTime().get_tm();
     auto tm = mktime(&timeinfo);
     auto ltm = (tm + 60 * 60 * 8);
     timeinfo = *gmtime(&ltm);
-
-    if ((tm / 60) % 10 == 0)
-    {
-        M5.Display.fillScreen(TFT_BLACK);
-        M5.Display.fillScreen(TFT_WHITE);
-    }
 
     M5.Display.startWrite();
     M5.Display.fillScreen(TFT_WHITE);
@@ -58,7 +55,9 @@ void mainScreen()
     M5.Display.startWrite();
     char hour_str[6];
     sprintf(hour_str, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
-    displayText(hour_str, &Font4, M5.Display.width() / 2 - (temp_avaliable ? 23 : 0), 65, ALIGN_CENTER, 2);
+    displayText(hour_str, &Font4,
+                M5.Display.width() / 2 - ((temp_avaliable && press_avaliable) ? 23 : 0), 65,
+                ALIGN_CENTER, 2);
     M5.Display.endWrite();
 
     if (temp_avaliable && press_avaliable)
@@ -103,8 +102,4 @@ void mainScreen()
     M5.Display.endWrite();
     M5.Display.display();
     M5.Display.waitDisplay();
-
-    M5.Display.powerSaveOn();
-    M5.Power.lightSleep(60 * 1000 * 1000);
-    M5.Display.powerSaveOff();
 }
