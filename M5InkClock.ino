@@ -52,6 +52,11 @@ void setup(void)
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
         M5.Display.fillScreen(TFT_WHITE);
+
+        for (int i = 0; i < DATA_POINTS; i++) {
+          temp_hum_data[i].temperature = -0xFF;
+          temp_hum_data[i].humidity = -0xFF;
+        }
     }
 }
 
@@ -73,6 +78,6 @@ void loop()
     digitalWrite(GPIO_NUM_27, HIGH);
     gpio_hold_en(GPIO_NUM_12);
 
-    M5.Power.deepSleep(60 * 1000 * 1000);
+    M5.Power.deepSleep(5 * 1000 * 1000);
     M5.Display.powerSaveOff();
 }

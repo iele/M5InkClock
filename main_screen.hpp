@@ -46,9 +46,9 @@ void drawGraph()
 {
     // 用于绘图的起始坐标
     int startX = 30;
-    int startY = 120;
-    int endX = 180;
-    int endY = 190;
+    int startY = 125;
+    int endX = 170;
+    int endY = 185;
 
     // 清除图表区域
     M5.Display.fillRect(startX, startY, endX - startX, endY - startY, TFT_WHITE);
@@ -56,87 +56,79 @@ void drawGraph()
     // 绘制坐标轴
     M5.Display.drawLine(startX, endY, endX, endY, TFT_BLACK);     // X 轴
     M5.Display.drawLine(startX, startY, startX, endY, TFT_BLACK); // Y 轴
+    M5.Display.drawLine(endX, startY, endX, endY, TFT_BLACK); // Y 轴
 
     // 绘制坐标轴标签
+    M5.Display.setFont(&Font0);
     M5.Display.setTextSize(1);
     M5.Display.setTextColor(TFT_BLACK);
     M5.Display.setCursor(endX - 10, endY - 10);
-    M5.Display.print("Time");
 
-    M5.Display.setCursor(5, startY);
-    M5.Display.print("Temp/Hum");
-
-    int32_t temp_min = 1 << 30;
-    int32_t temp_max = -(1 << 30);
-    int32_t hum_min = 1 << 30;
-    int32_t hum_max = -(1 << 30);
+    int32_t temp_min = 10;
+    int32_t temp_max = 30;
+    int32_t hum_min = 0;
+    int32_t hum_max = 100;
 
     for (int i = 0; i < DATA_POINTS; i++)
     {
         float temp = temp_hum_data[i].temperature;
         float hum = temp_hum_data[i].humidity;
-        if (temp < temp_min)
-        {
-            temp_min = temp;
-        }
-        if (temp > temp_max)
-        {
-            temp_max = temp;
-        }
-        if (hum < hum_min)
-        {
-            hum_min = hum;
-        }
-        if (hum > hum_max)
-        {
-            hum_max = hum;
-        }
+        if (temp < temp_min && temp > -60) temp_min = temp;
+        if (temp > temp_max && temp < 60) temp_max = temp;
     }
 
     // 绘制温度线图
-    for (int i = 0; i < DATA_POINTS - 1; i++)
+    float ratio = ((float)endX - startX) / DATA_POINTS;
+    for (int i = current_index; i < DATA_POINTS + current_index; i++)
     {
-        if (temp_hum_data[i].temperature != -0XFF && temp_hum_data[i + 1].temperature != -0XFF)
+        int x1 = i % DATA_POINTS;
+        int x2 = (i + 1) % DATA_POINTS;
+        if (x1 < x2 && temp_hum_data[x1].temperature != -0XFF && temp_hum_data[x2].temperature != -0XFF)
         {
             M5.Display.drawLine(
-                (2.5 * i) + startX,
-                map(temp_hum_data[i].temperature, temp_max, temp_min, startY, endY),
-                2.5 * (i + 1) + startX,
-                map(temp_hum_data[i + 1].temperature, temp_max, temp_min, startY, endY),
+                (ratio * x1) + startX,
+                map(temp_hum_data[x1].temperature, temp_max, temp_min, startY, endY),
+                ratio * (x2) + startX,
+                map(temp_hum_data[x2].temperature, temp_max, temp_min, startY, endY),
                 TFT_BLACK);
         }
     }
 
     // 绘制湿度线图
-    for (int i = 0; i < DATA_POINTS - 1; i++)
+    for (int i = current_index; i < DATA_POINTS + current_index; i+=2)
     {
-        if (temp_hum_data[i].humidity != -0XFF && temp_hum_data[i + 1].humidity != -0XFF)
+        int x1 = i % DATA_POINTS;
+        int x2 = (i + 1) % DATA_POINTS;
+        if (x1 < x2 &&  temp_hum_data[x1].humidity != -0XFF && temp_hum_data[x2].humidity != -0XFF)
         {
 
             M5.Display.drawLine(
-                (2.5 * i) + startX,
-                map(temp_hum_data[i].humidity, hum_max, hum_min, startY, endY),
-                2.5 * (i + 1) + startX,
-                map(temp_hum_data[i + 1].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
+                (ratio * x1) + startX,
+                map(temp_hum_data[x1].humidity, hum_max, hum_min, startY, endY),
+                (ratio * x2) + startX,
+                map(temp_hum_data[x2].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
         }
     }
 
-    // 绘制 Y 轴刻度和标签（只为温度）
     int y = map(temp_min, temp_max, temp_min, startY, endY);
-    M5.Display.setFont(&Font0);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
-    M5.Display.setCursor(startX - 3 - 5 - 10, y - 6);
-    M5.Display.print(int(temp_min));
+    displayText(String(int(temp_min)).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
     y = map((temp_min + temp_max) / 2, temp_max, temp_min, startY, endY);
-    M5.Display.setFont(&Font0);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
-    M5.Display.setCursor(startX - 3 - 5 - 10, y - 6);
-    M5.Display.print(int((temp_min + temp_max) / 2));
+    displayText(String(int(temp_min + temp_max) / 2).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
     y = map(temp_max, temp_max, temp_min, startY, endY);
-    M5.Display.setFont(&Font0);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
-    M5.Display.setCursor(startX - 3 - 5 - 10, y - 6);
-    M5.Display.print(int(temp_max));
+    displayText(String(int(temp_max)).c_str(), &Font0, startX -10, y - 3, ALIGN_RIGHT, 1);
+
+    y = map(hum_min, hum_max, hum_min, startY, endY);
+    M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
+    displayText(String(int(hum_min)).c_str(), &Font0, endX + 10, y - 3, ALIGN_LEFT, 1);
+    y = map((hum_min + hum_max) / 2, hum_max, hum_min, startY, endY);
+    M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
+    displayText(String(int(hum_min + hum_max) / 2).c_str(), &Font0, endX + 10, y - 3, ALIGN_LEFT, 1);
+    y = map(hum_max, hum_max, hum_min, startY, endY);
+    M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
+    displayText(String(int(hum_max)).c_str(), &Font0, endX + 10, y - 3, ALIGN_LEFT, 1);
 }
 
 const char *months[12] = {"一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月",
