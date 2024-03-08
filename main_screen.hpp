@@ -6,7 +6,138 @@
 #include "env_hat.hpp"
 #include "utils.hpp"
 
-#include "poem.h"
+typedef struct
+{
+    float temperature;
+    float humidity;
+    time_t timestamp;
+} TempHumData;
+
+#define DATA_POINTS 60
+
+RTC_DATA_ATTR TempHumData temp_hum_data[DATA_POINTS];
+RTC_DATA_ATTR int current_index = 0;
+
+void storeTempHumData(float temperature, float humidity)
+{
+    time_t now = time(NULL);
+    temp_hum_data[current_index].temperature = temperature;
+    temp_hum_data[current_index].humidity = humidity;
+    temp_hum_data[current_index].timestamp = now;
+    current_index = (current_index + 1) % DATA_POINTS;
+}
+
+void updateSensorData()
+{
+    bool temp_avaliable = sht3x.update();
+    if (temp_avaliable)
+    {
+        float temperature = sht3x.cTemp;
+        float humidity = sht3x.humidity;
+        storeTempHumData(temperature, humidity);
+    }
+    else
+    {
+        storeTempHumData(-0XFF, -0XFF);
+    }
+}
+
+void drawGraph()
+{
+    // 用于绘图的起始坐标
+    int startX = 30;
+    int startY = 120;
+    int endX = 180;
+    int endY = 190;
+
+    // 清除图表区域
+    M5.Display.fillRect(startX, startY, endX - startX, endY - startY, TFT_WHITE);
+
+    // 绘制坐标轴
+    M5.Display.drawLine(startX, endY, endX, endY, TFT_BLACK);     // X 轴
+    M5.Display.drawLine(startX, startY, startX, endY, TFT_BLACK); // Y 轴
+
+    // 绘制坐标轴标签
+    M5.Display.setTextSize(1);
+    M5.Display.setTextColor(TFT_BLACK);
+    M5.Display.setCursor(endX - 10, endY - 10);
+    M5.Display.print("Time");
+
+    M5.Display.setCursor(5, startY);
+    M5.Display.print("Temp/Hum");
+
+    int32_t temp_min = 1 << 30;
+    int32_t temp_max = -(1 << 30);
+    int32_t hum_min = 1 << 30;
+    int32_t hum_max = -(1 << 30);
+
+    for (int i = 0; i < DATA_POINTS; i++)
+    {
+        float temp = temp_hum_data[i].temperature;
+        float hum = temp_hum_data[i].humidity;
+        if (temp < temp_min)
+        {
+            temp_min = temp;
+        }
+        if (temp > temp_max)
+        {
+            temp_max = temp;
+        }
+        if (hum < hum_min)
+        {
+            hum_min = hum;
+        }
+        if (hum > hum_max)
+        {
+            hum_max = hum;
+        }
+    }
+
+    // 绘制温度线图
+    for (int i = 0; i < DATA_POINTS - 1; i++)
+    {
+        if (temp_hum_data[i].temperature != -0XFF && temp_hum_data[i + 1].temperature != -0XFF)
+        {
+            M5.Display.drawLine(
+                (2.5 * i) + startX,
+                map(temp_hum_data[i].temperature, temp_max, temp_min, startY, endY),
+                2.5 * (i + 1) + startX,
+                map(temp_hum_data[i + 1].temperature, temp_max, temp_min, startY, endY),
+                TFT_BLACK);
+        }
+    }
+
+    // 绘制湿度线图
+    for (int i = 0; i < DATA_POINTS - 1; i++)
+    {
+        if (temp_hum_data[i].humidity != -0XFF && temp_hum_data[i + 1].humidity != -0XFF)
+        {
+
+            M5.Display.drawLine(
+                (2.5 * i) + startX,
+                map(temp_hum_data[i].humidity, hum_max, hum_min, startY, endY),
+                2.5 * (i + 1) + startX,
+                map(temp_hum_data[i + 1].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
+        }
+    }
+
+    // 绘制 Y 轴刻度和标签（只为温度）
+    int y = map(temp_min, temp_max, temp_min, startY, endY);
+    M5.Display.setFont(&Font0);
+    M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
+    M5.Display.setCursor(startX - 3 - 5 - 10, y - 6);
+    M5.Display.print(int(temp_min));
+    y = map((temp_min + temp_max) / 2, temp_max, temp_min, startY, endY);
+    M5.Display.setFont(&Font0);
+    M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
+    M5.Display.setCursor(startX - 3 - 5 - 10, y - 6);
+    M5.Display.print(int((temp_min + temp_max) / 2));
+    y = map(temp_max, temp_max, temp_min, startY, endY);
+    M5.Display.setFont(&Font0);
+    M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
+    M5.Display.setCursor(startX - 3 - 5 - 10, y - 6);
+    M5.Display.print(int(temp_max));
+}
 
 const char *months[12] = {"一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月",
                           "十一月", "十二月"};
@@ -51,11 +182,11 @@ void mainScreen()
     M5.Display.setFont(&efontCN_24);
     auto width1 = M5.Display.textWidth(date_str);
     auto width2 = M5.Display.textWidth(week_str);
-    auto width = width1+width2;
-    displayText(date_str, &efontCN_24, (M5.Display.width()  - width) / 2, 25, ALIGN_LEFT, 1);
+    auto width = width1 + width2;
+    displayText(date_str, &efontCN_24, (M5.Display.width() - width) / 2, 25, ALIGN_LEFT, 1);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-    M5.Display.fillRect( (M5.Display.width()  + width) / 2 - width2 - 3 , 25 - 3, 30, 30, TFT_BLACK);
-    displayText(week_str, &efontCN_24, (M5.Display.width()  + width) / 2, 25, ALIGN_RIGHT, 1);
+    M5.Display.fillRect((M5.Display.width() + width) / 2 - width2 - 3, 25 - 3, 30, 30, TFT_BLACK);
+    displayText(week_str, &efontCN_24, (M5.Display.width() + width) / 2, 25, ALIGN_RIGHT, 1);
     M5.Display.setTextColor(TFT_BLACK, TFT_WHITE);
     M5.Display.endWrite();
 
@@ -105,8 +236,8 @@ void mainScreen()
     }
 
     M5.Display.startWrite();
-    displayText(poem[(tm / 60) % 188][0], &efontCN_16, M5.Display.width() / 2, 125, ALIGN_CENTER, 1);
-    displayText(poem[(tm / 60) % 188][1], &efontCN_16, M5.Display.width() / 2, 155, ALIGN_CENTER, 1);
+    updateSensorData();
+    drawGraph();
     M5.Display.endWrite();
 
     M5.Display.endWrite();
