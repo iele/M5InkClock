@@ -10,7 +10,6 @@ typedef struct
 {
     float temperature;
     float humidity;
-    time_t timestamp;
 } TempHumData;
 
 #define DATA_POINTS 60
@@ -20,11 +19,12 @@ RTC_DATA_ATTR int current_index = 0;
 
 void storeTempHumData(float temperature, float humidity)
 {
-    time_t now = time(NULL);
-    temp_hum_data[current_index].temperature = temperature;
-    temp_hum_data[current_index].humidity = humidity;
-    temp_hum_data[current_index].timestamp = now;
-    current_index = (current_index + 1) % DATA_POINTS;
+    for (int i = 0; i < DATA_POINTS - 1; i++) {
+      temp_hum_data[i].temperature =  temp_hum_data[i+1].temperature;
+      temp_hum_data[i].humidity =  temp_hum_data[i+1].humidity;
+    }
+    temp_hum_data[DATA_POINTS - 1].temperature = temperature;
+    temp_hum_data[DATA_POINTS - 1].humidity = humidity;
 }
 
 void updateSensorData()
@@ -79,31 +79,31 @@ void drawGraph()
 
     // 绘制温度线图
     float ratio = ((float)endX - startX) / DATA_POINTS;
-    for (int i = current_index; i < DATA_POINTS + current_index; i++)
+    for (int i = 0; i < DATA_POINTS-1; i++)
     {
-        int x1 = i % DATA_POINTS;
-        int x2 = (i + 1) % DATA_POINTS;
+        int x1 = i;
+        int x2 = i+1;
         if (x1 < x2 && temp_hum_data[x1].temperature != -0XFF && temp_hum_data[x2].temperature != -0XFF)
         {
             M5.Display.drawLine(
                 (ratio * x1) + startX,
                 map(temp_hum_data[x1].temperature, temp_max, temp_min, startY, endY),
-                ratio * (x2) + startX,
+                (ratio * x2) + startX,
                 map(temp_hum_data[x2].temperature, temp_max, temp_min, startY, endY),
                 TFT_BLACK);
         }
     }
 
     // 绘制湿度线图
-    for (int i = current_index; i < DATA_POINTS + current_index; i+=2)
+    for (int i = 0; i < DATA_POINTS-1; i+=2)
     {
-        int x1 = i % DATA_POINTS;
-        int x2 = (i + 1) % DATA_POINTS;
+        int x1 = i;
+        int x2 = i+1;
         if (x1 < x2 &&  temp_hum_data[x1].humidity != -0XFF && temp_hum_data[x2].humidity != -0XFF)
         {
 
             M5.Display.drawLine(
-                (ratio * x1) + startX,
+                (ratio * x1 ) + startX,
                 map(temp_hum_data[x1].humidity, hum_max, hum_min, startY, endY),
                 (ratio * x2) + startX,
                 map(temp_hum_data[x2].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
@@ -143,9 +143,6 @@ const char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
 
 void mainScreen()
 {
-    M5.Display.fillScreen(TFT_BLACK);
-    M5.Display.fillScreen(TFT_WHITE);
-
     auto timeinfo = M5.Rtc.getDateTime().get_tm();
     auto tm = mktime(&timeinfo);
     auto ltm = (tm + 60 * 60 * 8);

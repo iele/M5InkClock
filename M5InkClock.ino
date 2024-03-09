@@ -6,14 +6,15 @@
 #include "env_hat.hpp"
 #include "utils.hpp"
 
-const char *ssid = "H&Q";
-const char *password = "hengheng&queen123";
+const char *ssid = "test";
+const char *password = "12341234";
 
 const char *ntpServer = "ntp.aliyun.com";
 const char *gmt = "UTC-0";
 
 void setup(void)
 {
+    setCpuFrequencyMhz(80);
     M5.begin();
     env_begin();
 
@@ -26,6 +27,9 @@ void setup(void)
 
         configTzTime(gmt, ntpServer);
         M5.Display.setTextSize(1);
+        M5.Display.println("Prepare your hotspot:");
+        M5.Display.printf("SSID: %s\n", ssid);
+        M5.Display.printf("PASSWORD: %s\n\n", password);
         M5.Display.print("Connecting\n");
         WiFi.begin(ssid, password);
         while (WiFi.status() != WL_CONNECTED)
@@ -62,15 +66,19 @@ void setup(void)
 
 void loop()
 {
-    M5.Power.setLed(255);
     M5.update();
     if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0)
     {
+        setCpuFrequencyMhz(240);
+        M5.Power.setLed(255);
         appScreen();
-    }
 
+        M5.Display.fillScreen(TFT_BLACK);
+        M5.Display.fillScreen(TFT_WHITE);
+        M5.Power.setLed(0);
+    }
+    setCpuFrequencyMhz(80);
     mainScreen();
-    M5.Power.setLed(0);
 
     M5.Display.powerSaveOn();
 
@@ -78,6 +86,6 @@ void loop()
     digitalWrite(GPIO_NUM_27, HIGH);
     gpio_hold_en(GPIO_NUM_12);
 
-    M5.Power.deepSleep(5 * 1000 * 1000);
+    M5.Power.deepSleep(60 * 1000 * 1000);
     M5.Display.powerSaveOff();
 }
