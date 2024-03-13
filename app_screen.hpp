@@ -5,7 +5,7 @@
 #include "twenty_four.hpp"
 #include "wifi_scan.hpp"
 
-#define APPS 5
+#define APPS 3
 const char *apps[] = {"WiFi扫描器", "24点计算器", "返回"};
 int selected_apps = 0;
 
