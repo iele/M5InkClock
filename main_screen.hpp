@@ -14,17 +14,41 @@ typedef struct
 
 #define DATA_POINTS 60
 
+RTC_DATA_ATTR time_t stat_time;
+RTC_DATA_ATTR int stat_count = 0;
 RTC_DATA_ATTR TempHumData temp_hum_data[DATA_POINTS];
-RTC_DATA_ATTR int current_index = 0;
 
 void storeTempHumData(float temperature, float humidity)
 {
-    for (int i = 0; i < DATA_POINTS - 1; i++) {
-      temp_hum_data[i].temperature =  temp_hum_data[i+1].temperature;
-      temp_hum_data[i].humidity =  temp_hum_data[i+1].humidity;
+    time_t now;
+    time(&now);
+    bool need_shift = false;
+    if (now > stat_time + 24 * 60)
+    {
+        need_shift = true;
+        stat_time = now;
+        stat_count = 0;
     }
-    temp_hum_data[DATA_POINTS - 1].temperature = temperature;
-    temp_hum_data[DATA_POINTS - 1].humidity = humidity;
+    else
+    {
+        stat_count++;
+    }
+
+    if (need_shift)
+    {
+        for (int i = 0; i < DATA_POINTS - 1; i++)
+        {
+            temp_hum_data[i].temperature = temp_hum_data[i + 1].temperature;
+            temp_hum_data[i].humidity = temp_hum_data[i + 1].humidity;
+        }
+        temp_hum_data[DATA_POINTS - 1].temperature = temperature;
+        temp_hum_data[DATA_POINTS - 1].humidity = humidity;
+    }
+    else
+    {
+        temp_hum_data[DATA_POINTS - 1].temperature = (temp_hum_data[DATA_POINTS - 1].temperature * stat_count + temperature) / (stat_count + 1);
+        temp_hum_data[DATA_POINTS - 1].humidity = (temp_hum_data[DATA_POINTS - 1].humidity * stat_count + humidity) / (stat_count + 1);
+    }
 }
 
 void updateSensorData()
@@ -56,7 +80,7 @@ void drawGraph()
     // 绘制坐标轴
     M5.Display.drawLine(startX, endY, endX, endY, TFT_BLACK);     // X 轴
     M5.Display.drawLine(startX, startY, startX, endY, TFT_BLACK); // Y 轴
-    M5.Display.drawLine(endX, startY, endX, endY, TFT_BLACK); // Y 轴
+    M5.Display.drawLine(endX, startY, endX, endY, TFT_BLACK);     // Y 轴
 
     // 绘制坐标轴标签
     M5.Display.setFont(&Font0);
@@ -73,16 +97,18 @@ void drawGraph()
     {
         float temp = temp_hum_data[i].temperature;
         float hum = temp_hum_data[i].humidity;
-        if (temp < temp_min && temp > -60) temp_min = temp;
-        if (temp > temp_max && temp < 60) temp_max = temp;
+        if (temp < temp_min && temp > -60)
+            temp_min = temp;
+        if (temp > temp_max && temp < 60)
+            temp_max = temp;
     }
 
     // 绘制温度线图
     float ratio = ((float)endX - startX) / DATA_POINTS;
-    for (int i = 0; i < DATA_POINTS-1; i++)
+    for (int i = 0; i < DATA_POINTS - 1; i++)
     {
         int x1 = i;
-        int x2 = i+1;
+        int x2 = i + 1;
         if (x1 < x2 && temp_hum_data[x1].temperature != -0XFF && temp_hum_data[x2].temperature != -0XFF)
         {
             M5.Display.drawLine(
@@ -95,15 +121,15 @@ void drawGraph()
     }
 
     // 绘制湿度线图
-    for (int i = 0; i < DATA_POINTS-1; i+=2)
+    for (int i = 0; i < DATA_POINTS - 1; i += 2)
     {
         int x1 = i;
-        int x2 = i+1;
-        if (x1 < x2 &&  temp_hum_data[x1].humidity != -0XFF && temp_hum_data[x2].humidity != -0XFF)
+        int x2 = i + 1;
+        if (x1 < x2 && temp_hum_data[x1].humidity != -0XFF && temp_hum_data[x2].humidity != -0XFF)
         {
 
             M5.Display.drawLine(
-                (ratio * x1 ) + startX,
+                (ratio * x1) + startX,
                 map(temp_hum_data[x1].humidity, hum_max, hum_min, startY, endY),
                 (ratio * x2) + startX,
                 map(temp_hum_data[x2].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
@@ -118,7 +144,7 @@ void drawGraph()
     displayText(String(int(temp_min + temp_max) / 2).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
     y = map(temp_max, temp_max, temp_min, startY, endY);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
-    displayText(String(int(temp_max)).c_str(), &Font0, startX -10, y - 3, ALIGN_RIGHT, 1);
+    displayText(String(int(temp_max)).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
 
     y = map(hum_min, hum_max, hum_min, startY, endY);
     M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
@@ -153,13 +179,16 @@ void mainScreen()
 
     // Power ----------------------------------------------------------
     int32_t level = M5.Power.getBatteryLevel();
+    int32_t volt = M5.Power.getBatteryVoltage();
     M5.Display.startWrite();
     char level_str[4];
     sprintf(level_str, "%d%%", level);
-    M5.Display.fillRect(0, 0, M5.Display.width(), 8, TFT_WHITE);
-    M5.Display.drawRect(0, 0, M5.Display.width() - 30, 8, TFT_BLACK);
-    M5.Display.fillRect(0, 0, ((float)level / 100 * (M5.Display.width() - 30)), 8, TFT_BLACK);
-    displayText(level_str, &Font0, M5.Display.width(), 0, ALIGN_RIGHT, 1);
+    char volt_str[10];
+    sprintf(volt_str, "%.1fV", (float)volt/1000);
+    M5.Display.drawRect(0, 0, M5.Display.width() - 60, 8, TFT_BLACK);
+    M5.Display.fillRect(0, 0, ((float)level / 100 * (M5.Display.width() - 60)), 8, TFT_BLACK);
+    displayText(level_str, &Font0, M5.Display.width() - 30, 0, ALIGN_RIGHT, 1);
+    displayText(volt_str, &Font0, M5.Display.width(), 0, ALIGN_RIGHT, 1);
     M5.Display.endWrite();
 
     // Date ----------------------------------------------------------

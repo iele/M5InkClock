@@ -6,7 +6,7 @@
 #include "wifi_scan.hpp"
 
 #define APPS 5
-const char *apps[] = {"24点计算器", "WiFi扫描器", "待定", "设置", "返回"};
+const char *apps[] = {"WiFi扫描器", "24点计算器", "返回"};
 int selected_apps = 0;
 
 void appScreen()
@@ -43,10 +43,10 @@ void appScreen()
             switch (selected_apps)
             {
             case 0:
-                twenty_four_app();
+                wifi_scan_app();
                 break;
             case 1:
-                wifi_scan_app();
+                twenty_four_app();
                 break;
             case 2:
             case 3:
