@@ -42,17 +42,21 @@ void drawPoint(int channel, int rssi, const char *name, bool tag)
     int x = map(channel, 1, 13, 30, M5.Display.width() - 20);
     int y = map(abs(rssi), 0, 100, M5.Display.height() - 30, 10);
     M5.Display.fillCircle(x, y, 2, TFT_BLACK);
-    if (tag) {
+    if (tag)
+    {
         M5.Display.drawCircle(x, y, 5, TFT_BLACK);
         char detail[20];
         sprintf(detail, "CH%d R%d", channel, rssi);
-        if (x + 7 + M5.Display.textWidth(name, &Font0) > 200 || x + 7 + M5.Display.textWidth(detail, &Font0) > 200) {
+        if (x + 7 + M5.Display.textWidth(name, &Font0) > 200 || x + 7 + M5.Display.textWidth(detail, &Font0) > 200)
+        {
             auto align = max(M5.Display.textWidth(name, &Font0), M5.Display.textWidth(detail, &Font0));
-            M5.Display.drawString(name, x + 7 - align , y+7, &Font0);
-            M5.Display.drawString(detail, x + 7 - align, y+17, &Font0);
-        } else {
-            M5.Display.drawString(name, x + 7, y+7, &Font0);
-            M5.Display.drawString(detail, x + 7, y+17, &Font0);
+            M5.Display.drawString(name, x + 7 - align, y + 7, &Font0);
+            M5.Display.drawString(detail, x + 7 - align, y + 17, &Font0);
+        }
+        else
+        {
+            M5.Display.drawString(name, x + 7, y + 7, &Font0);
+            M5.Display.drawString(detail, x + 7, y + 17, &Font0);
         }
     }
 }
@@ -67,8 +71,10 @@ void drawGraph(int total, int current)
         auto ssid = WiFi.SSID(i);
         auto chan = WiFi.channel(i);
         auto rssi = WiFi.RSSI(i);
-        if (rssi > -5) rssi = -5;
-        if (rssi < -100) rssi = -100;
+        if (rssi > -5)
+            rssi = -5;
+        if (rssi < -100)
+            rssi = -100;
         drawPoint(chan, rssi, ssid.c_str(), current == i);
     }
     M5.Display.endWrite();
@@ -85,7 +91,7 @@ void wifi_scan_app()
         int current = -1;
         M5.Display.fillScreen(TFT_BLACK);
         M5.Display.fillScreen(TFT_WHITE);
-        displayText("WiFi扫描中", &efontCN_24, M5.Display.width() / 2, 80, ALIGN_CENTER, 1);
+        displayText("WiFi扫描中...", &efontCN_24, M5.Display.width() / 2, 80, ALIGN_CENTER, 1);
         WiFi.scanNetworks(true);
         while (true)
         {
@@ -118,14 +124,14 @@ void wifi_scan_app()
                 WiFi.mode(WIFI_OFF);
                 return;
             }
-            if (M5.BtnA.wasClicked())
+            if (M5.BtnA.wasClicked() || M5.BtnA.wasHold())
             {
                 if (current == -1)
                     current = total;
                 current--;
                 need_update = true;
             }
-            else if (M5.BtnC.wasClicked())
+            else if (M5.BtnC.wasClicked() || M5.BtnC.wasHold())
             {
                 current++;
                 if (current == total)
@@ -141,7 +147,7 @@ void wifi_scan_app()
             {
                 break;
             }
-            delay(100);
+            delay(10);
         }
     }
 }
