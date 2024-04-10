@@ -18,7 +18,7 @@ void setup(void)
     M5.begin();
     env_begin();
 
-    M5.Display.setEpdMode(epd_fast);
+    M5.Display.setEpdMode(epd_fastest);
 
     if (esp_reset_reason() != ESP_RST_DEEPSLEEP)
     {
@@ -27,6 +27,7 @@ void setup(void)
 
         configTzTime(gmt, ntpServer);
         M5.Display.setTextSize(1);
+        M5.Display.setTextFont(&Font0);
         M5.Display.println("Prepare your hotspot:");
         M5.Display.printf("SSID: %s\n", ssid);
         M5.Display.printf("PASSWORD: %s\n\n", password);
@@ -55,12 +56,24 @@ void setup(void)
         // disconnect WiFi as it's no longer needed
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
-        M5.Display.fillScreen(TFT_WHITE);
 
-        for (int i = 0; i < DATA_POINTS; i++) {
-          temp_hum_data[i].temperature = -0xFF;
-          temp_hum_data[i].humidity = -0xFF;
+        for (int i = 0; i < DATA_POINTS; i++)
+        {
+            temp_hum_data[i].temperature = -0xFF;
+            temp_hum_data[i].humidity = -0xFF;
         }
+
+        M5.Display.println("\nWait time sync");
+        while ((millis() / 1000) % 61 != 0)
+        {
+            M5.Display.setTextColor(TFT_BLACK, TFT_WHITE);
+            M5.Display.drawNumber(millis() / 1000, 0, M5.Display.height() - 20);
+            M5.Display.print(".");
+            delay(1000);
+        }
+        M5.Display.println("\nOK");
+
+        M5.Display.fillScreen(TFT_WHITE);
     }
 }
 

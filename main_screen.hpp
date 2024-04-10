@@ -23,43 +23,43 @@ void storeTempHumData(float temperature, float humidity, bool valid)
 {
     time_t now;
     time(&now);
-    bool need_shift = false;
-    if (now > stat_time + 24 * 60)
+    // bool need_shift = false;
+    // if (now > stat_time + 24 * 60)
+    //{
+    //     need_shift = true;
+    //     stat_time = now;
+    //     stat_count = 0;
+    // }
+    // else
+    //{
+    //     stat_count++;
+    // }
+    //
+    // if (need_shift)
+    //{
+    for (int i = 0; i < DATA_POINTS - 1; i++)
     {
-        need_shift = true;
-        stat_time = now;
-        stat_count = 0;
+        temp_hum_data[i].temperature = temp_hum_data[i + 1].temperature;
+        temp_hum_data[i].humidity = temp_hum_data[i + 1].humidity;
     }
-    else
+    if (valid)
     {
-        stat_count++;
+        temp_hum_data[DATA_POINTS - 1].temperature = temperature;
+        temp_hum_data[DATA_POINTS - 1].humidity = humidity;
     }
-
-    if (need_shift)
-    {
-        for (int i = 0; i < DATA_POINTS - 1; i++)
-        {
-            temp_hum_data[i].temperature = temp_hum_data[i + 1].temperature;
-            temp_hum_data[i].humidity = temp_hum_data[i + 1].humidity;
-        }
-        if (valid)
-        {
-            temp_hum_data[DATA_POINTS - 1].temperature = temperature;
-            temp_hum_data[DATA_POINTS - 1].humidity = humidity;
-        }
-    }
-    else
-    {
-        if (valid)
-        {
-            temp_hum_data[DATA_POINTS - 1].temperature = (temp_hum_data[DATA_POINTS - 1].temperature * stat_count + temperature) / (stat_count + 1);
-            temp_hum_data[DATA_POINTS - 1].humidity = (temp_hum_data[DATA_POINTS - 1].humidity * stat_count + humidity) / (stat_count + 1);
-        }
-        else
-        {
-            stat_count--;
-        }
-    }
+    // }
+    // else
+    // {
+    //     if (valid)
+    //     {
+    //         temp_hum_data[DATA_POINTS - 1].temperature = (temp_hum_data[DATA_POINTS - 1].temperature * stat_count + temperature) / (stat_count + 1);
+    //         temp_hum_data[DATA_POINTS - 1].humidity = (temp_hum_data[DATA_POINTS - 1].humidity * stat_count + humidity) / (stat_count + 1);
+    //     }
+    //     else
+    //     {
+    //         stat_count--;
+    //     }
+    // }
 }
 
 void updateSensorData()
@@ -196,10 +196,10 @@ void mainScreen()
     sprintf(level_str, "%d%%", level);
     char volt_str[10];
     sprintf(volt_str, "%.1fV", (float)volt / 1000);
-    M5.Display.drawRect(0, 0, M5.Display.width() - 60, 8, TFT_BLACK);
+    M5.Display.drawRect(0, 0, M5.Display.width() - 90, 8, TFT_BLACK);
     M5.Display.fillRect(0, 0, ((float)level / 100 * (M5.Display.width() - 60)), 8, TFT_BLACK);
     displayText(level_str, &Font0, M5.Display.width() - 30, 0, ALIGN_RIGHT, 1);
-    displayText(volt_str, &Font0, M5.Display.width(), 0, ALIGN_RIGHT, 1);
+    displayText(volt_str, &Font0, M5.Display.width() - 0, 0, ALIGN_RIGHT, 1);
     M5.Display.endWrite();
 
     // Date ----------------------------------------------------------
