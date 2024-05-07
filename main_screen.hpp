@@ -180,6 +180,7 @@ const char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
 
 void mainScreen()
 {
+    env_begin();
     auto timeinfo = M5.Rtc.getDateTime().get_tm();
     auto tm = mktime(&timeinfo);
     auto ltm = (tm + 60 * 60 * 8);
@@ -196,7 +197,7 @@ void mainScreen()
     sprintf(level_str, "%d%%", level);
     char volt_str[10];
     sprintf(volt_str, "%.1fV", (float)volt / 1000);
-    M5.Display.drawRect(0, 0, M5.Display.width() - 90, 8, TFT_BLACK);
+    M5.Display.drawRect(0, 0, M5.Display.width() - 60, 8, TFT_BLACK);
     M5.Display.fillRect(0, 0, ((float)level / 100 * (M5.Display.width() - 60)), 8, TFT_BLACK);
     displayText(level_str, &Font0, M5.Display.width() - 30, 0, ALIGN_RIGHT, 1);
     displayText(volt_str, &Font0, M5.Display.width() - 0, 0, ALIGN_RIGHT, 1);

@@ -16,7 +16,6 @@ void setup(void)
 {
     setCpuFrequencyMhz(80);
     M5.begin();
-    env_begin();
 
     M5.Display.setEpdMode(epd_fastest);
 
@@ -63,16 +62,6 @@ void setup(void)
             temp_hum_data[i].humidity = -0xFF;
         }
 
-        M5.Display.println("\nWait time sync");
-        while ((millis() / 1000) % 61 != 0)
-        {
-            M5.Display.setTextColor(TFT_BLACK, TFT_WHITE);
-            M5.Display.drawNumber(millis() / 1000, 0, M5.Display.height() - 20);
-            M5.Display.print(".");
-            delay(1000);
-        }
-        M5.Display.println("\nOK");
-
         M5.Display.fillScreen(TFT_WHITE);
     }
 }
@@ -93,12 +82,12 @@ void loop()
     setCpuFrequencyMhz(80);
     mainScreen();
 
-    M5.Display.powerSaveOn();
-
     pinMode(GPIO_NUM_27, OUTPUT);
     digitalWrite(GPIO_NUM_27, HIGH);
     gpio_hold_en(GPIO_NUM_12);
 
-    M5.Power.deepSleep(60 * 1000 * 1000);
-    M5.Display.powerSaveOff();
+    auto second =  M5.Rtc.getDateTime().get_tm().tm_sec;
+
+    M5.Display.powerSaveOn();
+    M5.Power.deepSleep((61 - second) * 1000 * 1000);
 }

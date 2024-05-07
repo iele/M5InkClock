@@ -5,9 +5,10 @@
 #include "twenty_four.hpp"
 #include "wifi_scan.hpp"
 #include "ble_scan.hpp"
+#include "i2c_scan.hpp"
 
 #define APPS 4
-const char *apps[] = {"WiFi扫描器", "蓝牙扫描器", "24点计算器", "返回"};
+const char *apps[] = {"WiFi扫描", "蓝牙扫描", "I2C扫描", "24点计算", "返回"};
 int selected_apps = 0;
 
 void appScreen()
@@ -50,9 +51,11 @@ void appScreen()
                 ble_scan_app();
                 break;
             case 2:
-                twenty_four_app();
+                i2c_scan_app();
                 break;
             case 3:
+                twenty_four_app();
+                break;
             case 4:
                 return;
                 break;
