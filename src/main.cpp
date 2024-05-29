@@ -9,7 +9,10 @@
 const char *ssid = "test";
 const char *password = "12341234";
 
-const char *ntpServer = "ntp.aliyun.com";
+const char *ntpServer1 = "ntp.ntsc.ac.cn";
+const char *ntpServer2 = "pool.ntp.org";
+const char *ntpServer3 = "ntp.aliyun.com";
+
 const char *gmt = "UTC-0";
 
 void setup(void)
@@ -24,9 +27,9 @@ void setup(void)
         M5.Display.fillScreen(TFT_BLACK);
         M5.Display.fillScreen(TFT_WHITE);
 
-        configTzTime(gmt, ntpServer);
+        configTzTime(gmt, ntpServer1, ntpServer2, ntpServer3);
         M5.Display.setTextSize(1);
-        M5.Display.setTextFont(&Font0);
+        M5.Display.setFont(&Font0);
         M5.Display.println("Prepare your hotspot:");
         M5.Display.printf("SSID: %s\n", ssid);
         M5.Display.printf("PASSWORD: %s\n\n", password);
@@ -49,9 +52,14 @@ void setup(void)
         time_t t = time(nullptr) + 1;
         while (t > time(nullptr))
             ;
+        t += 60 * 3;
         M5.Rtc.setDateTime(gmtime(&t));
 
         M5.Display.println("\nOK");
+        M5.Display.printf("Current Time: %s\n", asctime(gmtime(&t)));
+
+        delay(5000);
+
         // disconnect WiFi as it's no longer needed
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
