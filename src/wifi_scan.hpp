@@ -1,3 +1,5 @@
+#pragma once
+
 #include <M5Unified.h>
 #include <WiFi.h>
 
@@ -19,7 +21,7 @@ void drawAxes()
 
     for (int i = 1; i <= 13; i++)
     {
-        int x = map(i, 1, 13, 30, M5.Display.width() - 20);
+        int x = ::map(i, 1, 13, 30, M5.Display.width() - 20);
         M5.Display.drawLine(x, M5.Display.height() - 35, x, M5.Display.height() - 25, TFT_BLACK);
         String label = String(i);
         M5.Display.drawString(label, x - M5.Display.textWidth(label, &fonts::Font0) / 2, M5.Display.height() - 25, &fonts::Font0);
@@ -27,7 +29,7 @@ void drawAxes()
 
     for (int i = 0; i >= -100; i -= 20)
     {
-        int y = map(i, 0, -100, M5.Display.height() - 30, 10);
+        int y = ::map(i, 0, -100, M5.Display.height() - 30, 10);
         M5.Display.drawLine(15, y, 25, y, TFT_BLACK);
         if (i > -100)
         { // 避免在边界绘制负100的标签
@@ -39,8 +41,8 @@ void drawAxes()
 
 void drawPoint(int channel, int rssi, const char *name, bool tag)
 {
-    int x = map(channel, 1, 13, 30, M5.Display.width() - 20);
-    int y = map(abs(rssi), 0, 100, M5.Display.height() - 30, 10);
+    int x = ::map(channel, 1, 13, 30, M5.Display.width() - 20);
+    int y = ::map(abs(rssi), 0, 100, M5.Display.height() - 30, 10);
     M5.Display.fillCircle(x, y, 2, TFT_BLACK);
     if (tag)
     {

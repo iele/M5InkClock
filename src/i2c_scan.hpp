@@ -1,7 +1,7 @@
+#pragma once
+
 #include <M5Unified.h>
-
 #include <Wire.h>
-
 #include "utils.hpp"
 
 void i2c_scan_app()

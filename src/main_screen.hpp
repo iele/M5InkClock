@@ -1,6 +1,6 @@
 #include <M5Unified.h>
 #include <efontEnableCn.h>
-#include <efontFontData.h>
+#include <efont.h>
 
 #include "time.h"
 
@@ -73,7 +73,7 @@ void updateSensorData()
     }
     else
     {
-        storeTempHumData(NULL, NULL, false);
+        storeTempHumData(0, 0, false);
     }
 }
 
@@ -124,9 +124,9 @@ void drawGraph()
         {
             M5.Display.drawLine(
                 (ratio * x1) + startX,
-                map(temp_hum_data[x1].temperature, temp_max, temp_min, startY, endY),
+                ::map(temp_hum_data[x1].temperature, temp_max, temp_min, startY, endY),
                 (ratio * x2) + startX,
-                map(temp_hum_data[x2].temperature, temp_max, temp_min, startY, endY),
+                ::map(temp_hum_data[x2].temperature, temp_max, temp_min, startY, endY),
                 TFT_BLACK);
         }
     }
@@ -141,29 +141,29 @@ void drawGraph()
 
             M5.Display.drawLine(
                 (ratio * x1) + startX,
-                map(temp_hum_data[x1].humidity, hum_max, hum_min, startY, endY),
+                ::map(temp_hum_data[x1].humidity, hum_max, hum_min, startY, endY),
                 (ratio * x2) + startX,
-                map(temp_hum_data[x2].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
+                ::map(temp_hum_data[x2].humidity, hum_max, hum_min, startY, endY), TFT_BLACK);
         }
     }
 
-    int y = map(temp_min, temp_max, temp_min, startY, endY);
+    int y = ::map(temp_min, temp_max, temp_min, startY, endY);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
     displayText(String(int(temp_min)).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
-    y = map((temp_min + temp_max) / 2, temp_max, temp_min, startY, endY);
+    y = ::map((temp_min + temp_max) / 2, temp_max, temp_min, startY, endY);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
     displayText(String(int(temp_min + temp_max) / 2).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
-    y = map(temp_max, temp_max, temp_min, startY, endY);
+    y = ::map(temp_max, temp_max, temp_min, startY, endY);
     M5.Display.drawLine(startX - 5, y, startX, y, TFT_BLACK);
     displayText(String(int(temp_max)).c_str(), &Font0, startX - 10, y - 3, ALIGN_RIGHT, 1);
 
-    y = map(hum_min, hum_max, hum_min, startY, endY);
+    y = ::map(hum_min, hum_max, hum_min, startY, endY);
     M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
     displayText(String(int(hum_min)).c_str(), &Font0, endX + 10, y - 3, ALIGN_LEFT, 1);
-    y = map((hum_min + hum_max) / 2, hum_max, hum_min, startY, endY);
+    y = ::map((hum_min + hum_max) / 2, hum_max, hum_min, startY, endY);
     M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
     displayText(String(int(hum_min + hum_max) / 2).c_str(), &Font0, endX + 10, y - 3, ALIGN_LEFT, 1);
-    y = map(hum_max, hum_max, hum_min, startY, endY);
+    y = ::map(hum_max, hum_max, hum_min, startY, endY);
     M5.Display.drawLine(endX + 5, y, endX, y, TFT_BLACK);
     displayText(String(int(hum_max)).c_str(), &Font0, endX + 10, y - 3, ALIGN_LEFT, 1);
 }

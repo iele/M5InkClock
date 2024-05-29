@@ -1,3 +1,5 @@
+#pragma once
+
 #include <M5Unified.h>
 #include <BLEDevice.h>
 #include "utils.hpp"

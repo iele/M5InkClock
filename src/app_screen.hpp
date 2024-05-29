@@ -1,6 +1,8 @@
+#pragma once
+
 #include <M5Unified.h>
 #include <efontEnableCn.h>
-#include <efontFontData.h>
+#include <efont.h>
 
 #include "twenty_four.hpp"
 #include "wifi_scan.hpp"
