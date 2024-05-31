@@ -1,5 +1,6 @@
 #include <M5Unified.h>
 #include <WiFi.h>
+#include <ESPPerfectTime.h>
 
 #include "main_screen.hpp"
 #include "app_screen.hpp"
@@ -27,7 +28,6 @@ void setup(void)
         M5.Display.fillScreen(TFT_BLACK);
         M5.Display.fillScreen(TFT_WHITE);
 
-        configTzTime(gmt, ntpServer1, ntpServer2, ntpServer3);
         M5.Display.setTextSize(1);
         M5.Display.setFont(&Font0);
         M5.Display.println("Prepare your hotspot:");
@@ -42,27 +42,30 @@ void setup(void)
             M5.Display.print(".");
         }
         M5.Display.println("\nCONNECTED");
-        M5.Display.println("\nTime Setting ");
-        struct tm timeinfo;
-        while (!getLocalTime(&timeinfo, 1000))
+
+        static bool sync_success = false;
+        auto callback = []()
         {
+            struct tm *timeinfo;
+            suseconds_t usec;
+            timeinfo = pftime::localtime(nullptr, &usec);
+            M5.Rtc.setDateTime(timeinfo);
+            M5.Display.println("\nOK");
+            auto tm = M5.Rtc.getDateTime().get_tm();
+            M5.Display.printf("Current Time: %2d:%2d:%2d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+            // disconnect WiFi as it's no longer needed
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_OFF);
+            sync_success = true;
+        };
+        pftime::setSyncSuccessCallback(callback);
+        pftime::configTzTime(gmt, ntpServer1, ntpServer2, ntpServer3);
+        M5.Display.println("\nTime Setting ");
+        while(!sync_success){
+            delay(1000);
+            Serial.print(".");
             M5.Display.print(".");
-            delay(500);
         }
-        time_t t = time(nullptr) + 1;
-        while (t > time(nullptr))
-            ;
-        t += 60 * 3;
-        M5.Rtc.setDateTime(gmtime(&t));
-
-        M5.Display.println("\nOK");
-        M5.Display.printf("Current Time: %s\n", asctime(gmtime(&t)));
-
-        delay(5000);
-
-        // disconnect WiFi as it's no longer needed
-        WiFi.disconnect(true);
-        WiFi.mode(WIFI_OFF);
 
         for (int i = 0; i < DATA_POINTS; i++)
         {
@@ -94,7 +97,7 @@ void loop()
     digitalWrite(GPIO_NUM_27, HIGH);
     gpio_hold_en(GPIO_NUM_12);
 
-    auto second =  M5.Rtc.getDateTime().get_tm().tm_sec;
+    auto second = M5.Rtc.getDateTime().get_tm().tm_sec;
 
     M5.Display.powerSaveOn();
     M5.Power.deepSleep((61 - second) * 1000 * 1000);

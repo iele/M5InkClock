@@ -181,10 +181,9 @@ const char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
 void mainScreen()
 {
     env_begin();
-    auto timeinfo = M5.Rtc.getDateTime().get_tm();
-    auto tm = mktime(&timeinfo);
-    auto ltm = (tm + 60 * 60 * 8);
-    timeinfo = *gmtime(&ltm);
+    auto tm = M5.Rtc.getDateTime().get_tm();
+    auto ltm = (mktime(&tm) + 60 * 60 * 8);
+    auto timeinfo = *gmtime(&ltm);
 
     M5.Display.startWrite();
     M5.Display.fillScreen(TFT_WHITE);
@@ -233,7 +232,7 @@ void mainScreen()
 
     if (temp_avaliable && press_avaliable)
     {
-        if ((tm / 60) % 2)
+        if ((ltm / 60) % 2)
         {
             // Temp ----------------------------------------------------------
             M5.Display.startWrite();
