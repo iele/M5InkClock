@@ -134,7 +134,7 @@ void twenty_four_app()
                     break;
                 }
             }
-            if (M5.BtnB.wasHold())
+            if (M5.BtnPWR.wasClicked() || M5.BtnB.wasHold())
             {
                 return;
             }

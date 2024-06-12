@@ -21,22 +21,6 @@ RTC_DATA_ATTR TempHumData temp_hum_data[DATA_POINTS];
 
 void storeTempHumData(float temperature, float humidity, bool valid)
 {
-    time_t now;
-    time(&now);
-    // bool need_shift = false;
-    // if (now > stat_time + 24 * 60)
-    //{
-    //     need_shift = true;
-    //     stat_time = now;
-    //     stat_count = 0;
-    // }
-    // else
-    //{
-    //     stat_count++;
-    // }
-    //
-    // if (need_shift)
-    //{
     for (int i = 0; i < DATA_POINTS - 1; i++)
     {
         temp_hum_data[i].temperature = temp_hum_data[i + 1].temperature;
@@ -47,19 +31,6 @@ void storeTempHumData(float temperature, float humidity, bool valid)
         temp_hum_data[DATA_POINTS - 1].temperature = temperature;
         temp_hum_data[DATA_POINTS - 1].humidity = humidity;
     }
-    // }
-    // else
-    // {
-    //     if (valid)
-    //     {
-    //         temp_hum_data[DATA_POINTS - 1].temperature = (temp_hum_data[DATA_POINTS - 1].temperature * stat_count + temperature) / (stat_count + 1);
-    //         temp_hum_data[DATA_POINTS - 1].humidity = (temp_hum_data[DATA_POINTS - 1].humidity * stat_count + humidity) / (stat_count + 1);
-    //     }
-    //     else
-    //     {
-    //         stat_count--;
-    //     }
-    // }
 }
 
 void updateSensorData()
@@ -270,6 +241,5 @@ void mainScreen()
     M5.Display.endWrite();
 
     M5.Display.endWrite();
-    M5.Display.display();
     M5.Display.waitDisplay();
 }

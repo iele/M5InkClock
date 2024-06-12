@@ -100,7 +100,7 @@ void i2c_scan_app()
         {
             M5.update();
             bool need_update = false;
-            if (M5.BtnB.wasHold())
+            if (M5.BtnPWR.wasClicked() || M5.BtnB.wasHold())
             {
                 return;
             }
