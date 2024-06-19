@@ -17,7 +17,6 @@ void setup(void)
 
     M5.Display.powerSaveOff();
     M5.Display.setEpdMode(epd_text);
-    M5.Display.fillScreen(TFT_WHITE);
 }
 
 void loop()
@@ -28,9 +27,6 @@ void loop()
         setCpuFrequencyMhz(240);
         M5.Power.setLed(255);
         appScreen();
-
-        M5.Display.fillScreen(TFT_BLACK);
-        M5.Display.fillScreen(TFT_WHITE);
         M5.Power.setLed(0);
     }
     setCpuFrequencyMhz(80);

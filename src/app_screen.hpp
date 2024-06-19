@@ -16,9 +16,6 @@ int selected_apps = 0;
 
 void appScreen()
 {
-    M5.Display.fillScreen(TFT_BLACK);
-    M5.Display.fillScreen(TFT_WHITE);
-
     while (true)
     {
         if (M5.BtnA.wasClicked())
@@ -69,6 +66,7 @@ void appScreen()
         }
         else if (M5.BtnPWR.wasHold() || M5.BtnB.wasHold())
         {
+            M5.Display.fillScreen(TFT_WHITE);
             return;
         }
 

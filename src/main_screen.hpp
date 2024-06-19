@@ -157,12 +157,13 @@ void mainScreen()
     auto timeinfo = *gmtime(&ltm);
 
     M5.Display.startWrite();
-    M5.Display.fillScreen(TFT_WHITE);
 
     // Power ----------------------------------------------------------
     int32_t level = M5.Power.getBatteryLevel();
     int32_t volt = M5.Power.getBatteryVoltage();
+
     M5.Display.startWrite();
+    M5.Display.fillRect(0, 0, M5.Display.width(), 8, TFT_WHITE);
     char level_str[4];
     sprintf(level_str, "%d%%", level);
     char volt_str[10];
@@ -185,7 +186,7 @@ void mainScreen()
     auto width = width1 + width2;
     displayText(date_str, &efontCN_24, (M5.Display.width() - width) / 2, 25, ALIGN_LEFT, 1);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-    M5.Display.fillRect((M5.Display.width() + width) / 2 - width2 - 3, 25 - 3, 30, 30, TFT_BLACK);
+    M5.Display.fillRect((M5.Display.width() + width) / 2 - width2 - 3, 22, 30, 30, TFT_BLACK);
     displayText(week_str, &efontCN_24, (M5.Display.width() + width) / 2, 25, ALIGN_RIGHT, 1);
     M5.Display.setTextColor(TFT_BLACK, TFT_WHITE);
     M5.Display.endWrite();
